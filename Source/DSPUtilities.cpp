@@ -1,19 +1,10 @@
-/*
-==============================================================================
+//
+//  DSPUtilities.cpp
 
-ParameterSmoother.h
-Created: 1 May 2015 12:43:46am
-Author:  Jordan Harris
+//
+//
 
-==============================================================================
-*/
-
-/*
-    Useful DSP utilities. For instance, calculating frequency from a given 
-    pitch (MIDI) value, or vice versa.
-*/
-
-//==============================================================================
+#include "DSPUtilities.h"
 
 #ifndef DSP_UTILITIES
 #define DSP_UTILITIES
@@ -37,12 +28,12 @@ double freqToPitch(double freq)
 
 //==============================================================================
 
-/** 
-    Takes a value as input and clips it according to the min and max values.
-    Returns the input if (minValue <= in <= maxValue). 
-    If (in < minValue), then return minValue.
-    If (in > maxValue), then return maxValue.
-*/
+/**
+ Takes a value as input and clips it according to the min and max values.
+ Returns the input if (minValue <= in <= maxValue).
+ If (in < minValue), then return minValue.
+ If (in > maxValue), then return maxValue.
+ */
 double clipMinMax(double in, double minValue, double maxValue)
 {
     if (in < minValue)
@@ -55,11 +46,11 @@ double clipMinMax(double in, double minValue, double maxValue)
 
 //==============================================================================
 
-/** 
-    Takes a value as input and clips it according to the min value.
-    Returns the input if (minValue <= in). 
-    If (in < minValue), then return minValue.
-*/
+/**
+ Takes a value as input and clips it according to the min value.
+ Returns the input if (minValue <= in).
+ If (in < minValue), then return minValue.
+ */
 double clipMin(double in, double minValue)
 {
     if (in < minValue)
@@ -71,13 +62,13 @@ double clipMin(double in, double minValue)
 //==============================================================================
 
 /**
-    Crossfades linearly between two values (in0, in1). The value returned is 
-    determined by the value of the xFadeCtrl argument.
-    xFadeCtrl Range: 0->1
-    - xFadeCtrl = 0    (only in0 comes through)
-    - xFadeCtrl = 0.5  (equal mix of in0 and in1)
-    - xfadeCtrl = 1    (only in1 comes through)
-*/
+ Crossfades linearly between two values (in0, in1). The value returned is
+ determined by the value of the xFadeCtrl argument.
+ xFadeCtrl Range: 0->1
+ - xFadeCtrl = 0    (only in0 comes through)
+ - xFadeCtrl = 0.5  (equal mix of in0 and in1)
+ - xfadeCtrl = 1    (only in1 comes through)
+ */
 double xFadeLin(double xFadeCtrl, double in0, double in1)
 {
     // Clip the xFade parameter to only have range of 0->1
@@ -89,32 +80,32 @@ double xFadeLin(double xFadeCtrl, double in0, double in1)
 //==============================================================================
 
 /**
-    Parabolic Controller Shaper:
-    "Bends" the controller curve torwards the X or Y axis.
-    input range: (-1..0..1) maps to output range: (-1..0..1).
-    bend range: (-1..0..1)
-    - bend = -1 (max bend towards X axis)
-    - bend = 0 (don't bend)
-    - bend = 1 (max bend towards Y axis)
-*/
+ Parabolic Controller Shaper:
+ "Bends" the controller curve torwards the X or Y axis.
+ input range: (-1..0..1) maps to output range: (-1..0..1).
+ bend range: (-1..0..1)
+ - bend = -1 (max bend towards X axis)
+ - bend = 0 (don't bend)
+ - bend = 1 (max bend towards Y axis)
+ */
 double parCtrlShaper(double input, double bend)
 {
     // clip input and bend because the shaper only works in that range.
     input = clipMinMax(input, -1.0, 1.0);
     bend = clipMinMax(bend, -1.0, 1.0);
-    return input * ((bend + 1) - abs(input) * bend);
+    return input * ((bend + 1) - fabs(input) * bend);
 }
 
 //==============================================================================
 
 /**
-    Normalizes a range of values to the range 0->1.
-    (start/end should probably be the range of a parameter)
-    - input: the value to be normalized
-    - start: the start of the input's range
-    - end: the end of the input's range
-    Note: (start < end) and (start > end) are both valid.
-*/
+ Normalizes a range of values to the range 0->1.
+ (start/end should probably be the range of a parameter)
+ - input: the value to be normalized
+ - start: the start of the input's range
+ - end: the end of the input's range
+ Note: (start < end) and (start > end) are both valid.
+ */
 double normalizeRange(double input, double start, double end)
 {
     return (input - start) / (end - start);
@@ -128,3 +119,4 @@ double resonanceToQ(double resonance)
 
 //==============================================================================
 #endif  // DSP_UTILITIES
+
