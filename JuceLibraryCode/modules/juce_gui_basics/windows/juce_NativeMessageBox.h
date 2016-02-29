@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -107,11 +107,13 @@ public:
                                                const String& message,
                                             #if JUCE_MODAL_LOOPS_PERMITTED
                                                Component* associatedComponent = nullptr,
-                                               ModalComponentManager::Callback* callback = nullptr);
+                                               ModalComponentManager::Callback* callback = nullptr,
                                             #else
                                                Component* associatedComponent,
-                                               ModalComponentManager::Callback* callback);
+                                               ModalComponentManager::Callback* callback,
                                             #endif
+                                               const String& button1Text = "OK",
+                                               const String& button2Text = "Cancel");
 
     /** Shows a dialog box with three buttons.
 

@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -22,7 +22,7 @@
   ==============================================================================
 */
 
-extern Display* display;
+extern ::Display* display;
 extern XContext windowHandleXContext;
 typedef void (*WindowMessageReceiveCallback) (XEvent&);
 extern WindowMessageReceiveCallback dispatchWindowMessage;
@@ -775,7 +775,7 @@ class DisplayGeometry
 {
 private:
     //==============================================================================
-    DisplayGeometry (::Display *dpy, double masterScale)
+    DisplayGeometry (::Display* dpy, double masterScale)
     {
         jassert (instance == nullptr);
         instance = this;
@@ -912,19 +912,20 @@ public:
     }
 
     //==============================================================================
-    static DisplayGeometry& getInstance ()
+    static DisplayGeometry& getInstance()
     {
         jassert (instance != nullptr);
         return *instance;
     }
 
-    static DisplayGeometry& getOrCreateInstance (::Display *dpy, double masterScale)
+    static DisplayGeometry& getOrCreateInstance (::Display* dpy, double masterScale)
     {
         if (instance == nullptr)
             new DisplayGeometry (dpy, masterScale);
 
         return getInstance();
     }
+
 private:
     //==============================================================================
     static DisplayGeometry* instance;
@@ -977,9 +978,9 @@ private:
 
     //==============================================================================
    #if JUCE_USE_XRANDR
-    friend class ContainerDeletePolicy<XRRScreenResources>;
-    friend class ContainerDeletePolicy<XRROutputInfo>;
-    friend class ContainerDeletePolicy<XRRCrtcInfo>;
+    friend struct ContainerDeletePolicy<XRRScreenResources>;
+    friend struct ContainerDeletePolicy<XRROutputInfo>;
+    friend struct ContainerDeletePolicy<XRRCrtcInfo>;
 
     class XRandrWrapper
     {
@@ -1027,7 +1028,7 @@ private:
         }
 
         //==============================================================================
-        XRRScreenResources* getScreenResources (::Display *dpy, ::Window window)
+        XRRScreenResources* getScreenResources (::Display* dpy, ::Window window)
         {
             if (getScreenResourcesPtr != nullptr)
                 return getScreenResourcesPtr (dpy, window);
@@ -1035,7 +1036,7 @@ private:
             return nullptr;
         }
 
-        XRROutputInfo* getOutputInfo (::Display *dpy, XRRScreenResources *resources, RROutput output)
+        XRROutputInfo* getOutputInfo (::Display* dpy, XRRScreenResources* resources, RROutput output)
         {
             if (getOutputInfoPtr != nullptr)
                 return getOutputInfoPtr (dpy, resources, output);
@@ -1043,7 +1044,7 @@ private:
             return nullptr;
         }
 
-        XRRCrtcInfo* getCrtcInfo (::Display *dpy, XRRScreenResources *resources, RRCrtc crtc)
+        XRRCrtcInfo* getCrtcInfo (::Display* dpy, XRRScreenResources* resources, RRCrtc crtc)
         {
             if (getCrtcInfoPtr != nullptr)
                 return getCrtcInfoPtr (dpy, resources, crtc);
@@ -1051,18 +1052,19 @@ private:
             return nullptr;
         }
 
-        RROutput getOutputPrimary (::Display *dpy, ::Window window)
+        RROutput getOutputPrimary (::Display* dpy, ::Window window)
         {
             if (getOutputPrimaryPtr != nullptr)
                 return getOutputPrimaryPtr (dpy, window);
 
             return 0;
         }
+
     private:
         //==============================================================================
-        friend class ContainerDeletePolicy<XRRScreenResources>;
-        friend class ContainerDeletePolicy<XRROutputInfo>;
-        friend class ContainerDeletePolicy<XRRCrtcInfo>;
+        friend struct ContainerDeletePolicy<XRRScreenResources>;
+        friend struct ContainerDeletePolicy<XRROutputInfo>;
+        friend struct ContainerDeletePolicy<XRRCrtcInfo>;
 
         void freeScreenResources (XRRScreenResources* ptr)
         {
@@ -1084,13 +1086,13 @@ private:
     private:
         static XRandrWrapper* instance;
 
-        typedef XRRScreenResources* (*tXRRGetScreenResources) (::Display *dpy, ::Window window);
-        typedef void (*tXRRFreeScreenResources) (XRRScreenResources *resources);
-        typedef XRROutputInfo* (*tXRRGetOutputInfo) (::Display *dpy, XRRScreenResources *resources, RROutput output);
-        typedef void (*tXRRFreeOutputInfo) (XRROutputInfo *outputInfo);
-        typedef XRRCrtcInfo* (*tXRRGetCrtcInfo) (::Display *dpy, XRRScreenResources *resources, RRCrtc crtc);
-        typedef void (*tXRRFreeCrtcInfo) (XRRCrtcInfo *crtcInfo);
-        typedef RROutput (*tXRRGetOutputPrimary) (::Display *dpy, ::Window window);
+        typedef XRRScreenResources* (*tXRRGetScreenResources) (::Display*, ::Window);
+        typedef void (*tXRRFreeScreenResources) (XRRScreenResources*);
+        typedef XRROutputInfo* (*tXRRGetOutputInfo) (::Display*, XRRScreenResources*, RROutput);
+        typedef void (*tXRRFreeOutputInfo) (XRROutputInfo*);
+        typedef XRRCrtcInfo* (*tXRRGetCrtcInfo) (::Display*, XRRScreenResources*, RRCrtc);
+        typedef void (*tXRRFreeCrtcInfo) (XRRCrtcInfo*);
+        typedef RROutput (*tXRRGetOutputPrimary) (::Display*, ::Window);
 
         void* libXrandr;
         tXRRGetScreenResources getScreenResourcesPtr;
@@ -1172,7 +1174,7 @@ private:
     }
 
     //==============================================================================
-    void queryDisplayInfos (::Display *dpy, double masterScale) noexcept
+    void queryDisplayInfos (::Display* dpy, double masterScale) noexcept
     {
         ScopedXLock xlock;
 
@@ -1644,7 +1646,7 @@ public:
             hints->width  = physicalBounds.getWidth();
             hints->height = physicalBounds.getHeight();
 
-            if ((getStyleFlags() & (windowHasTitleBar | windowIsResizable)) == windowHasTitleBar)
+            if ((getStyleFlags() & windowIsResizable) == 0)
             {
                 hints->min_width  = hints->max_width  = hints->width;
                 hints->min_height = hints->max_height = hints->height;
@@ -1863,12 +1865,6 @@ public:
             XSendEvent (display, RootWindow (display, DefaultScreen (display)),
                         False, SubstructureRedirectMask | SubstructureNotifyMask, &ev);
 
-            XWindowAttributes attr;
-            XGetWindowAttributes (display, windowH, &attr);
-
-            if (component.isAlwaysOnTop())
-                XRaiseWindow (display, windowH);
-
             XSync (display, False);
         }
 
@@ -1879,6 +1875,9 @@ public:
     {
         if (LinuxComponentPeer* const otherPeer = dynamic_cast<LinuxComponentPeer*> (other))
         {
+            if (otherPeer->styleFlags & windowIsTemporary)
+                return;
+
             setMinimised (false);
 
             Window newStack[] = { otherPeer->windowH, windowH };
@@ -2207,6 +2206,7 @@ public:
         wheel.deltaY = amount;
         wheel.isReversed = false;
         wheel.isSmooth = false;
+        wheel.isInertial = false;
 
         handleMouseWheel (0, getMousePos (buttonPressEvent), getEventTime (buttonPressEvent), wheel);
     }
@@ -2215,7 +2215,8 @@ public:
     {
         currentModifiers = currentModifiers.withFlags (buttonModifierFlag);
         toFront (true);
-        handleMouseEvent (0, getMousePos (buttonPressEvent), currentModifiers, getEventTime (buttonPressEvent));
+        handleMouseEvent (0, getMousePos (buttonPressEvent), currentModifiers,
+                          MouseInputSource::invalidPressure, getEventTime (buttonPressEvent));
     }
 
     void handleButtonPressEvent (const XButtonPressedEvent& buttonPressEvent)
@@ -2253,7 +2254,8 @@ public:
         if (dragState.dragging)
             handleExternalDragButtonReleaseEvent();
 
-        handleMouseEvent (0, getMousePos (buttonRelEvent), currentModifiers, getEventTime (buttonRelEvent));
+        handleMouseEvent (0, getMousePos (buttonRelEvent), currentModifiers,
+                          MouseInputSource::invalidPressure, getEventTime (buttonRelEvent));
 
         clearLastMousePos();
     }
@@ -2267,7 +2269,8 @@ public:
         if (dragState.dragging)
             handleExternalDragMotionNotify();
 
-        handleMouseEvent (0, getMousePos (movedEvent), currentModifiers, getEventTime (movedEvent));
+        handleMouseEvent (0, getMousePos (movedEvent), currentModifiers,
+                          MouseInputSource::invalidPressure, getEventTime (movedEvent));
     }
 
     void handleEnterNotifyEvent (const XEnterWindowEvent& enterEvent)
@@ -2280,7 +2283,8 @@ public:
         if (! currentModifiers.isAnyMouseButtonDown())
         {
             updateKeyModifiers ((int) enterEvent.state);
-            handleMouseEvent (0, getMousePos (enterEvent), currentModifiers, getEventTime (enterEvent));
+            handleMouseEvent (0, getMousePos (enterEvent), currentModifiers,
+                              MouseInputSource::invalidPressure, getEventTime (enterEvent));
         }
     }
 
@@ -2293,7 +2297,8 @@ public:
              || leaveEvent.mode == NotifyUngrab)
         {
             updateKeyModifiers ((int) leaveEvent.state);
-            handleMouseEvent (0, getMousePos (leaveEvent), currentModifiers, getEventTime (leaveEvent));
+            handleMouseEvent (0, getMousePos (leaveEvent), currentModifiers,
+                              MouseInputSource::invalidPressure, getEventTime (leaveEvent));
         }
     }
 
@@ -2316,6 +2321,10 @@ public:
         // Batch together all pending expose events
         XEvent nextEvent;
         ScopedXLock xlock;
+
+        // if we have opengl contexts then just repaint them all
+        // regardless if this is really necessary
+        repaintOpenGLContexts ();
 
         if (exposeEvent.window != windowH)
         {
@@ -2506,6 +2515,28 @@ public:
         return currentScaleFactor;
     }
 
+    //===============================================================================
+    void addOpenGLRepaintListener (Component* dummy)
+    {
+        if (dummy != nullptr)
+            glRepaintListeners.addIfNotAlreadyThere (dummy);
+    }
+
+    void removeOpenGLRepaintListener (Component* dummy)
+    {
+        if (dummy != nullptr)
+            glRepaintListeners.removeAllInstancesOf (dummy);
+    }
+
+    void repaintOpenGLContexts()
+    {
+        for (int i = 0; i < glRepaintListeners.size(); ++i)
+        {
+            if (Component* c = glRepaintListeners [i])
+                c->handleCommandMessage (0);
+        }
+    }
+
     //==============================================================================
     bool dontRepaint;
 
@@ -2665,6 +2696,7 @@ private:
     BorderSize<int> windowBorder;
     bool isAlwaysOnTop;
     double currentScaleFactor;
+    Array<Component*> glRepaintListeners;
     enum { KeyPressEventType = 2 };
 
     struct MotifWmHints
@@ -2928,7 +2960,7 @@ private:
         swa.border_pixel = 0;
         swa.background_pixmap = None;
         swa.colormap = colormap;
-        swa.override_redirect = (component.isAlwaysOnTop() && (styleFlags & windowIsTemporary) != 0) ? True : False;
+        swa.override_redirect = ((styleFlags & windowIsTemporary) != 0) ? True : False;
         swa.event_mask = getAllEventsMask();
 
         windowH = XCreateWindow (display, parentToAddTo != 0 ? parentToAddTo : root,
@@ -2937,9 +2969,13 @@ private:
                                  CWBorderPixel | CWColormap | CWBackPixmap | CWEventMask | CWOverrideRedirect,
                                  &swa);
 
+        unsigned int buttonMask = EnterWindowMask | LeaveWindowMask | PointerMotionMask;
+
+        if ((styleFlags & windowIgnoresMouseClicks) == 0)
+            buttonMask |= ButtonPressMask | ButtonReleaseMask;
+
         XGrabButton (display, AnyButton, AnyModifier, windowH, False,
-                     ButtonPressMask | ButtonReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask,
-                     GrabModeAsync, GrabModeAsync, None, None);
+                     buttonMask, GrabModeAsync, GrabModeAsync, None, None);
 
         // Set the window context to identify the window handle object
         if (XSaveContext (display, (XID) windowH, windowHandleXContext, (XPointer) this))
@@ -3009,11 +3045,12 @@ private:
         {}
     }
 
-    static int getAllEventsMask() noexcept
+    int getAllEventsMask() const noexcept
     {
-        return NoEventMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask
+        return NoEventMask | KeyPressMask | KeyReleaseMask
                  | EnterWindowMask | LeaveWindowMask | PointerMotionMask | KeymapStateMask
-                 | ExposureMask | StructureNotifyMask | FocusChangeMask;
+                 | ExposureMask | StructureNotifyMask | FocusChangeMask
+                 | ((styleFlags & windowIgnoresMouseClicks) != 0 ? (ButtonPressMask | ButtonReleaseMask) : 0);
     }
 
     template <typename EventType>
@@ -3720,12 +3757,45 @@ void Desktop::Displays::findDisplays (float masterScale)
 {
     DisplayGeometry& geometry = DisplayGeometry::getOrCreateInstance (display, masterScale);
 
+    // add the main display first
+    int mainDisplayIdx;
+    for (mainDisplayIdx = 0; mainDisplayIdx < geometry.infos.size(); ++mainDisplayIdx)
+    {
+        const DisplayGeometry::ExtendedInfo& info = geometry.infos.getReference (mainDisplayIdx);
+        if (info.isMain)
+        break;
+    }
+
+    // no main display found then use the first
+    if (mainDisplayIdx >= geometry.infos.size())
+        mainDisplayIdx = 0;
+
+    // add the main display
+    {
+        const DisplayGeometry::ExtendedInfo& info =
+      geometry.infos.getReference (mainDisplayIdx);
+        Desktop::Displays::Display d;
+
+        d.isMain = true;
+        d.scale = masterScale * info.scale;
+        d.dpi = info.dpi;
+
+        d.totalArea = DisplayGeometry::physicalToScaled (info.totalBounds);
+        d.userArea = (info.usableBounds / d.scale) + info.topLeftScaled;
+
+        displays.add (d);
+    }
+
     for (int i = 0; i < geometry.infos.size(); ++i)
     {
+        // don't add the main display a second time
+        if (i == mainDisplayIdx)
+            continue;
+
         const DisplayGeometry::ExtendedInfo& info = geometry.infos.getReference (i);
         Desktop::Displays::Display d;
 
-        d.isMain = info.isMain;
+        d.isMain = false;
         d.scale = masterScale * info.scale;
         d.dpi = info.dpi;
 
@@ -4088,6 +4158,18 @@ Rectangle<int> juce_LinuxScaledToPhysicalBounds(ComponentPeer* peer, const Recta
     return retval;
 }
 
+void juce_LinuxAddRepaintListener (ComponentPeer* peer, Component* dummy)
+{
+    if (LinuxComponentPeer* linuxPeer = dynamic_cast<LinuxComponentPeer*> (peer))
+        linuxPeer->addOpenGLRepaintListener (dummy);
+}
+
+void juce_LinuxRemoveRepaintListener (ComponentPeer* peer, Component* dummy)
+{
+    if (LinuxComponentPeer* linuxPeer = dynamic_cast<LinuxComponentPeer*> (peer))
+        linuxPeer->removeOpenGLRepaintListener (dummy);
+}
+
 //==============================================================================
 #if JUCE_MODAL_LOOPS_PERMITTED
 void JUCE_CALLTYPE NativeMessageBox::showMessageBox (AlertWindow::AlertIconType iconType,
@@ -4109,10 +4191,13 @@ void JUCE_CALLTYPE NativeMessageBox::showMessageBoxAsync (AlertWindow::AlertIcon
 bool JUCE_CALLTYPE NativeMessageBox::showOkCancelBox (AlertWindow::AlertIconType iconType,
                                                       const String& title, const String& message,
                                                       Component* associatedComponent,
-                                                      ModalComponentManager::Callback* callback)
+                                                      ModalComponentManager::Callback* callback,
+                                                      const String& button1Text,
+                                                      const String& button2Text)
 {
+    // TODO: This causes infinite recursion in case LookAndFeel is set to use native windows
     return AlertWindow::showOkCancelBox (iconType, title, message, String::empty, String::empty,
-                                         associatedComponent, callback);
+                                         associatedComponent, callback, button1Text, button2Text);
 }
 
 int JUCE_CALLTYPE NativeMessageBox::showYesNoCancelBox (AlertWindow::AlertIconType iconType,

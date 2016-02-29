@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="HjT8a0" name="VAStateVariableFilter" projectType="audioplug"
               version="1.0.0" bundleIdentifier="com.yourcompany.VAStateVariableFilter"
-              includeBinaryInAppConfig="1" buildVST="1" buildVST3="1" buildAU="0"
+              includeBinaryInAppConfig="1" buildVST="1" buildVST3="1" buildAU="1"
               buildRTAS="0" buildAAX="0" pluginName="VAStateVariableFilter"
               pluginDesc="VAStateVariableFilter" pluginManufacturer="Jordan Harris"
               pluginManufacturerCode="Manu" pluginCode="Hjt8" pluginChannelConfigs="{1, 1}, {2, 2}"
@@ -10,7 +10,7 @@
               pluginSilenceInIsSilenceOut="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="VAStateVariableFilterAU" pluginRTASCategory=""
               aaxIdentifier="com.yourcompany.VAStateVariableFilter" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="3.1.1" companyName="Jordan Harris">
+              jucerVersion="3.2.0" companyName="Jordan Harris">
   <MAINGROUP id="BbYydB" name="VAStateVariableFilter">
     <GROUP id="{55A1A033-E6D5-4637-BC8B-A0002A5F64BC}" name="Source">
       <GROUP id="{117ABCEA-8341-CCE5-5C5C-7F871B75C81E}" name="Resources">

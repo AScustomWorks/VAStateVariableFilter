@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -114,6 +114,10 @@ public:
     */
     void setStrokeType (const PathStrokeType& newStrokeType);
 
+    void setDashLengths (const Array<float>& newDashLengths);
+
+    void setClipPath (const Path&);
+
     /** Changes the stroke thickness.
         This is a shortcut for calling setStrokeType.
     */
@@ -121,6 +125,8 @@ public:
 
     /** Returns the current outline style. */
     const PathStrokeType& getStrokeType() const noexcept            { return strokeType; }
+
+    const Array<float>& getDashLengths() const noexcept { return dashLengths; };
 
     //==============================================================================
     /** @internal */
@@ -165,7 +171,9 @@ protected:
 
     //==============================================================================
     PathStrokeType strokeType;
-    Path path, strokePath;
+    Array<float> dashLengths;
+    Path path, strokePath, clipPath;
+    bool hasClipPath;
 
 private:
     class RelativePositioner;
