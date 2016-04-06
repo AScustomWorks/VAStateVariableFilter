@@ -157,6 +157,15 @@ public:
 
     //------------------------------------------------------------------------------
 
+    
+    double getCutoff(){ return cutoffFreq; }
+    
+    double getFilterType(){ return filterType; }
+    
+    double getQ(){ return Q; }
+    
+    double getShelfGain(){ return shelfGain; }
+    
 private:
     //==============================================================================
     //	Calculate the coefficients for the filter based on parameters.
